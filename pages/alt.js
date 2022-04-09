@@ -7,24 +7,23 @@ import { geoOrthographic, geoPath } from "d3-geo";
 import { timer } from "d3-timer";
 
 export default function Home() {
-  const [features, setFeatures] = useState([]);
-  const [path, setPath] = useState(() => {});
-  // const [svg, setSVG] = useState(null);
   const width = 500;
   const height = 500;
   const sens = 75;
   const inputRef = useRef();
-
   let projection = geoOrthographic()
     .scale(250)
     .center([0, 0])
     .rotate([0, -30])
     .translate([width / 2, height / 2]);
+  const [features, setFeatures] = useState([]);
+  const [path, setPath] = useState(geoPath().projection(projection));
+  // const [svg, setSVG] = useState(null);
 
   const initialScale = projection.scale();
   let r = initialScale;
 
-  const getFeatures = () => {
+  const fetchFeatures = () => {
     fetch("/countries-110m.json", {
       headers: {
         "Content-Type": "application/json",
@@ -34,69 +33,48 @@ export default function Home() {
       .then((res) => res.json())
       .then((d) => {
         setFeatures(feature(d, d.objects.countries).features);
-        setPath(
-          geoPath().projection(
-            geoOrthographic()
-              .scale(250)
-              .center([0, 0])
-              .rotate([0, -30])
-              .translate([500 / 2, 500 / 2])
-          )
-        );
         // setPaths(features.map((feature) => path(feature)));
         // console.log(paths);
       });
   };
 
+  // only runs once.
   useEffect(() => {
-    // sets features.
-    // console.log(
-    //   geoPath().projection(
-    //     geoOrthographic()
-    //       .scale(250)
-    //       .center([0, 0])
-    //       .rotate([0, -30])
-    //       .translate([500 / 2, 500 / 2])
-    //   )
-    // );
-
-    // asynchronously sets features.
-    getFeatures();
-    // Calling select on the svg element.
-    // select(inputRef.current)
-    //   .call(
-    //     drag().on("drag", (e, d) => {
-    //       const rotate = projection.rotate();
-    //       const k = sens / projection.scale();
-    //       projection.rotate([rotate[0] + e.dx * k, rotate[1] - e.dy * k]);
-    //       path = geoPath().projection(projection);
-    //       // change paths.
-    //       // setPaths(path(features));
-    //       // select(inputRef.current).selectAll("path").attr("d", path);
-    //     })
-    //   )
-    //   .call(
-    //     zoom().on("zoom", (e, d) => {
-    //       if (e.transform.k > 0.3) {
-    //         projection.scale(initialScale * e.transform.k);
-    //         path = geoPath().projection(projection);
-    //         // select(inputRef.current).selectAll("path").attr("d", path);
-    //         // features.map();
-    //         r = projection.scale();
-    //       } else {
-    //         e.transform.k = 0.3;
-    //       }
-    //     })
-    //   );
+    fetchFeatures();
+    console.log(path);
+    select(inputRef.current)
+      .call(
+        drag().on("drag", (e, d) => {
+          const rotate = projection.rotate();
+          const k = sens / projection.scale();
+          projection.rotate([rotate[0] + e.dx * k, rotate[1] - e.dy * k]);
+          setPath(geoPath().projection(projection));
+          // change paths.
+          // setPaths(path(features));
+          // select(inputRef.current).selectAll("path").attr("d", path);
+        })
+      )
+      .call(
+        zoom().on("zoom", (e, d) => {
+          if (e.transform.k > 0.3) {
+            projection.scale(initialScale * e.transform.k);
+            setPath(geoPath().projection(projection));
+            // select(inputRef.current).selectAll("path").attr("d", path);
+            // features.map();
+            r = projection.scale();
+          } else {
+            e.transform.k = 0.3;
+          }
+        })
+      );
 
     timer((elapsed) => {
       const rotate = projection.rotate();
       const k = sens / projection.scale();
       projection.rotate([rotate[0] - 1 * k, rotate[1]]);
       setPath(geoPath().projection(projection));
-      // svg.selectAll("path").attr("d", path);
     }, 200);
-  });
+  }, []);
   return (
     <div>
       <svg
@@ -120,7 +98,8 @@ export default function Home() {
           r={r}
         />
         <g className="countries">
-          {/* {features.map((f) => (
+          {/* {console.log(path)} */}
+          {features.map((f) => (
             <path
               d={path(f)}
               fill="white"
@@ -130,7 +109,7 @@ export default function Home() {
               key={f.id}
               onDrag={(e) => {}}
             />
-          ))} */}
+          ))}
         </g>
       </svg>
       <button onClick={() => console.log(path)}></button>
