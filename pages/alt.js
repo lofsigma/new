@@ -17,7 +17,11 @@ export default function Home() {
     .rotate([0, -30])
     .translate([width / 2, height / 2]);
   const [features, setFeatures] = useState([]);
-  const [path, setPath] = useState(geoPath().projection(projection));
+  const [newPath, setNewPath] = useState(geoPath().projection(projection));
+  const [paths, setPaths] = useState(
+    features.map((feature) => geoPath().projection(projection)(feature))
+  );
+  let path = geoPath().projection(projection);
   // const [svg, setSVG] = useState(null);
 
   const initialScale = projection.scale();
@@ -33,24 +37,26 @@ export default function Home() {
       .then((res) => res.json())
       .then((d) => {
         setFeatures(feature(d, d.objects.countries).features);
-        // setPaths(features.map((feature) => path(feature)));
-        // console.log(paths);
       });
   };
+
+  useEffect(() => {
+    setPaths(
+      features.map((feature) => geoPath().projection(projection)(feature))
+    );
+  }, [projection]);
 
   // only runs once.
   useEffect(() => {
     fetchFeatures();
-    console.log(path);
     select(inputRef.current)
       .call(
         drag().on("drag", (e, d) => {
           const rotate = projection.rotate();
           const k = sens / projection.scale();
           projection.rotate([rotate[0] + e.dx * k, rotate[1] - e.dy * k]);
-          setPath(geoPath().projection(projection));
-          // change paths.
-          // setPaths(path(features));
+          path = geoPath().projection(projection);
+          setNewPath(geoPath().projection(projection));
           // select(inputRef.current).selectAll("path").attr("d", path);
         })
       )
@@ -58,37 +64,16 @@ export default function Home() {
         zoom().on("zoom", (e, d) => {
           if (e.transform.k > 0.3) {
             projection.scale(initialScale * e.transform.k);
-            setPath(geoPath().projection(projection));
-            // select(inputRef.current).selectAll("path").attr("d", path);
-            // features.map();
             r = projection.scale();
           } else {
             e.transform.k = 0.3;
           }
         })
       );
-
-    timer((elapsed) => {
-      const rotate = projection.rotate();
-      const k = sens / projection.scale();
-      projection.rotate([rotate[0] - 1 * k, rotate[1]]);
-      setPath(geoPath().projection(projection));
-    }, 200);
   }, []);
   return (
     <div>
-      <svg
-        id="cow"
-        width={width}
-        height={height}
-        ref={inputRef}
-        // onDrag={(e) => {
-        // const rotate = projection.rotate();
-        // const k = sens / projection.scale();
-        // projection.rotate([rotate[0] + e.dx * k, rotate[1] - e.dy * k]);
-        // console.log(e.dx, e.dy);
-        // }}
-      >
+      <svg id="cow" width={width} height={height} ref={inputRef}>
         <circle
           fill="#EEE"
           stroke="000"
@@ -99,9 +84,9 @@ export default function Home() {
         />
         <g className="countries">
           {/* {console.log(path)} */}
-          {features.map((f) => (
+          {features.map((f, i) => (
             <path
-              d={path(f)}
+              d={paths[i]}
               fill="white"
               stroke="black"
               strokeWidth="0.3"
