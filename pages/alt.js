@@ -3,7 +3,14 @@ import { drag } from "d3-drag";
 import { zoom, zoomIdentity } from "d3-zoom";
 import { feature } from "topojson-client";
 import { event, select } from "d3-selection";
-import { geoOrthographic, geoPath, geoBounds, geoCentroid } from "d3-geo";
+import {
+  geoOrthographic,
+  geoPath,
+  geoBounds,
+  geoCentroid,
+  geogra,
+  geoGraticule,
+} from "d3-geo";
 import { timer } from "d3-timer";
 
 export default function Home() {
@@ -18,10 +25,25 @@ export default function Home() {
     .translate([width / 2, height / 2]);
 
   const [features, setFeatures] = useState([]);
-  const [active, setActive] = useState(null);
   const [path, setPath] = useState(() => geoPath().projection(projection));
   const [scale, setScale] = useState(projection.scale());
 
+  const graticule = geoGraticule();
+
+  // let graticule = geoGraticule();
+
+  // console.log("HELLO", graticule());
+
+  // function addBoundingBox(event, d) {
+  //   const bounds = path.bounds(d);
+  //   svg
+  //     .append("rect")
+  //     .attr("class", "bbox")
+  //     .attr("x", bounds[0][0])
+  //     .attr("y", bounds[0][1])
+  //     .attr("width", bounds[1][0] - bounds[0][0])
+  //     .attr("height", bounds[1][1] - bounds[0][1]);
+  // }
   const fetchFeatures = () => {
     fetch("/countries-110m.json", {
       headers: {
@@ -34,6 +56,26 @@ export default function Home() {
         setFeatures(feature(d, d.objects.countries).features);
       });
   };
+
+  const bBox = () =>
+    features.length && (
+      <path
+        fill="none"
+        stroke="red"
+        strokeWidth="1"
+        opacity="0.8"
+        strokeDasharray="5 5"
+        d={path(
+          graticule
+            .extentMajor(
+              geoBounds(
+                features.filter((f) => f.properties.name === "Colombia")[0]
+              )
+            )
+            .outline()
+        )}
+      />
+    );
 
   // only runs once.
   useEffect(() => {
@@ -49,7 +91,6 @@ export default function Home() {
       )
       .call(
         zoom().on("zoom", (e, d) => {
-          console.log(e.transform.k);
           if (e.transform.k > 0.3) {
             projection.scale(scale * e.transform.k);
             setPath(() => geoPath().projection(projection));
@@ -61,12 +102,12 @@ export default function Home() {
       );
 
     //optional globe spin
-    // timer(function (elapsed) {
-    //   const rotate = projection.rotate();
-    //   const k = sens / projection.scale();
-    //   projection.rotate([rotate[0] - 1 * k, rotate[1]]);
-    //   setPath(() => geoPath().projection(projection));
-    // }, 200);
+    timer(function (elapsed) {
+      const rotate = projection.rotate();
+      const k = sens / projection.scale();
+      projection.rotate([rotate[0] - 1 * k, rotate[1]]);
+      setPath(() => geoPath().projection(projection));
+    }, 200);
   }, []);
 
   return (
@@ -88,42 +129,50 @@ export default function Home() {
               stroke="black"
               strokeWidth="0.3"
               opacity="0.8"
-              key={f.id}
-              onDrag={(e) => {}}
-              onClick={() => {
-                // let bounds = geoBounds(f),
-                //   dx = bounds[1][0] - bounds[0][0],
-                //   dy = bounds[1][1] - bounds[0][1],
-                //   x = (bounds[0][0] + bounds[1][0]) / 2,
-                //   y = (bounds[0][1] + bounds[1][1]) / 2;
-
-                // // console.log(dx, dy, x, y);
-                // projection.fitExtent(
-                //   [
-                //     [dx, dy],
-                //     [x, y],
-                //   ],
-                //   f
-                // );
-
-                let p2 = geoCentroid(f);
-                projection.rotate([-p2[0], 20 - p2[1], 0]);
-                setPath(() => geoPath().projection(projection));
-                setScale(projection.scale());
-
-                /// from zoom;
-
-                // console.log(e.transform.k);
-                // if (e.transform.k > 0.3) {
-                //   projection.scale(scale * e.transform.k);
-                //   setPath(() => geoPath().projection(projection));
-                //   setScale(projection.scale());
-                // } else {
-                //   e.transform.k = 0.3;
-                // }
-              }}
+              key={f.name}
             />
           ))}
+        </g>
+        <g>
+          <path
+            d={path(geoGraticule())}
+            fill="none"
+            stroke="black"
+            strokeWidth="0.3"
+            opacity="0.8"
+          />
+          {bBox()}
+          {/* {features.length && (
+            <path
+              fill="none"
+              stroke="red"
+              strokeWidth="1"
+              opacity="0.8"
+              strokeDasharray="5 5"
+              d={path(graticule.extentMajor(geoBounds(features[5])).outline())}
+            />
+          )}
+          {console.log(
+            geoGraticule().extentMajor(geoBounds(features[5])).outline()
+          )}
+          {console.log("a", path)}
+          {console.log("b", geoGraticule())}
+          {console.log("c", geoGraticule().extentMajor())}
+          {console.log("d", graticule.extentMajor(geoBounds(features[5])))}
+          {console.log(
+            "e",
+            JSON.stringify(
+              graticule.extentMajor(geoBounds(features[5])).outline()
+            )
+          )}
+          {console.log("f", geoBounds(features[5]))}
+          {console.log("g", features)}
+          {console.log(
+            "h",
+            path(graticule.extentMajor(geoBounds(features[5])).outline()).catch(
+              (e) => console.log(e)
+            )
+          )} */}
         </g>
       </svg>
     </div>
