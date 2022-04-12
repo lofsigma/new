@@ -14,7 +14,6 @@ import {
   geoGraticule,
 } from "d3-geo";
 import { timer } from "d3-timer";
-import { from } from "@terminusdb/terminusdb-client/lib/woql";
 // import Versor from "versor";
 
 export default function Home() {
