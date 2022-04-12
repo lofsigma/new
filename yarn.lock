@@ -58,14 +58,9 @@
   dependencies:
     "glob" "7.1.7"
 
-"@next/swc-linux-x64-gnu@12.1.4":
-  "integrity" "sha512-nM+MA/frxlTLUKLJKorctdI20/ugfHRjVEEkcLp/58LGG7slNaP1E5d5dRA1yX6ISjPcQAkywas5VlGCg+uTvA=="
-  "resolved" "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-12.1.4.tgz"
-  "version" "12.1.4"
-
-"@next/swc-linux-x64-musl@12.1.4":
-  "integrity" "sha512-GoRHxkuW4u4yKw734B9SzxJwVdyEJosaZ62P7ifOwcujTxhgBt3y76V2nNUrsSuopcKI2ZTDjaa+2wd5zyeXbA=="
-  "resolved" "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-12.1.4.tgz"
+"@next/swc-darwin-x64@12.1.4":
+  "integrity" "sha512-p1lwdX0TVjaoDXQVuAkjtxVBbCL/urgxiMCBwuPDO7TikpXtSRivi+mIzBj5q7ypgICFmIAOW3TyupXeoPRAnA=="
+  "resolved" "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-12.1.4.tgz"
   "version" "12.1.4"
 
 "@nodelib/fs.scandir@2.1.5":
@@ -373,7 +368,7 @@
   "resolved" "https://registry.npmjs.org/d3-timer/-/d3-timer-3.0.1.tgz"
   "version" "3.0.1"
 
-"d3-transition@2 - 3":
+"d3-transition@^3.0.1", "d3-transition@2 - 3":
   "integrity" "sha512-ApKvfjsSR6tg06xrL434C0WydLr7JewBB3V+/39RMHsaXTOG0zmt/OAXeng5M5LBm0ojmxJrpomQVZ1aPvBL4w=="
   "resolved" "https://registry.npmjs.org/d3-transition/-/d3-transition-3.0.1.tgz"
   "version" "3.0.1"
@@ -1627,6 +1622,11 @@
   "integrity" "sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA=="
   "resolved" "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz"
   "version" "2.3.0"
+
+"versor@^0.2.0":
+  "integrity" "sha512-2UJ32VNh+lMUP9RlLoneEdrnupW3eIM9TGdTuaa+HSUqKACt9Vvw+xoGFGdd0YsUnGidTNyuxdhQRhJVpDAvqw=="
+  "resolved" "https://registry.npmjs.org/versor/-/versor-0.2.0.tgz"
+  "version" "0.2.0"
 
 "which-boxed-primitive@^1.0.2":
   "integrity" "sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg=="
