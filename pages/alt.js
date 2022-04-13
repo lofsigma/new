@@ -14,7 +14,6 @@ import {
   geoGraticule,
 } from "d3-geo";
 import { timer } from "d3-timer";
-// import Versor from "versor";
 
 const acos = Math.acos,
   asin = Math.asin,
@@ -282,6 +281,24 @@ export default function Home() {
         {/* {console.log(interpolateAngles)} */}
       </button>
       <button onClick={getCurrentAngles}>current Angle</button>
+      <button
+        onClick={() => {
+          console.log("before", projection.scale());
+          var bounds = path.bounds(
+              features.filter((f) => f.properties.name === "Colombia")[0]
+            ),
+            dx = bounds[1][0] - bounds[0][0],
+            dy = bounds[1][1] - bounds[0][1],
+            x = (bounds[0][0] + bounds[1][0]) / 2,
+            y = (bounds[0][1] + bounds[1][1]) / 2;
+          projection.scale(300);
+          setScale(300);
+          setPath(() => geoPath().projection(projection));
+          console.log("after", projection.scale());
+        }}
+      >
+        something
+      </button>
     </div>
   );
 }
