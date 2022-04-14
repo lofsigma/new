@@ -338,7 +338,7 @@ export default function Home() {
               strokeWidth="0.3"
               opacity="0.8"
               //   className={f.properties.name === active ? "active" : ""}
-              key={f.name}
+              key={f.properties.id}
               onClick={() => {
                 // if (f.properties.name === active) {
                 //   // i'm already active.
