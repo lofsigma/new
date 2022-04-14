@@ -138,7 +138,7 @@ export default function Home() {
     .top(0.85)
     .tickFormat((d) => format(",")(+d.toFixed(1)));
 
-  let bar;
+  // let scaleBar = document.getElementById("scale-bar-wrapper");
 
   const projection = geoOrthographic()
     .scale(250)
@@ -209,9 +209,7 @@ export default function Home() {
     setPath(() => geoPath().projection(projRef.current));
   };
 
-  const getCurrentAngles = () => {
-    console.log(angles);
-  };
+  let bar;
 
   let d3zoom = zoom()
     // no longer in d3 v4 - zoom initialises with zoomIdentity, so it's already at origin
@@ -235,7 +233,6 @@ export default function Home() {
         e.transform.k = 0.3;
       }
     });
-  //   let bar;
 
   useEffect(() => {
     fetchFeatures();
@@ -245,11 +242,9 @@ export default function Home() {
     //   .call(scaleBarZoom);
 
     const bar = useRef(
-      select(inputRef.current)
-        .append("g")
-        .attr("class", "scale-bar-wrapper")
-        .call(scaleBarZoom)
+      select(document.getElementById("scale-bar-wrapper")).call(scaleBarZoom)
     );
+
     select(inputRef.current)
       .call(drag().on("drag", dragBehavior))
       .call(
@@ -380,7 +375,7 @@ export default function Home() {
             },
           })}
         />
-        {/* <g className="scale-bar-wrapper"></g> */}
+        <g className="scale-bar-wrapper"></g>
       </svg>
       <button
         onClick={() => {
