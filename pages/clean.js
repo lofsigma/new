@@ -10,6 +10,7 @@ import { timer } from "d3-timer";
 // import versor from "versor";
 import {
   geoOrthographic,
+  geoAzimuthalEqualArea,
   geoPath,
   geoBounds,
   geoCentroid,
@@ -27,7 +28,7 @@ export default function Home() {
   const inputRef = useRef();
   const projRef = useRef(
     geoOrthographic()
-      .scale(250)
+      .scale(330)
       .center([0, 0])
       .rotate([0, -30])
       .translate([width / 2, height / 2])
@@ -35,35 +36,33 @@ export default function Home() {
 
   const [features, setFeatures] = useState([]);
   const [path, setPath] = useState(() => geoPath().projection(projRef.current));
-  const [scale, setScale] = useState(projRef.current.scale());
   const [active, setActive] = useState(null);
   const graticule = geoGraticule();
 
   let zoomBehavior = zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", (e, d) => {
-      if (e.transform.k > 0.3) {
-        projRef.current.scale(scale * e.transform.k);
-        setPath(() => geoPath().projection(projRef.current));
-        setScale(projRef.current.scale());
+    .scaleExtent([330, 10000])
+    .translateExtent([
+      [0, 0],
+      [width, height],
+    ])
+    .on("zoom", (e) => {
+      projRef.current.scale(e.transform.k);
+      setPath(() => geoPath().projection(projRef.current));
 
-        //   g.attr("transform", t);
-
-        // Pass the k property of the zoom's transform
-        // to the scale bar's scaleFactor.
-        // Then call the scaleBar again.
-        select(document.getElementById("scale-bar-wrapper")).attr(
-          "transform",
-          e.transform
-        );
-        scaleBarGenerator.zoomFactor(e.transform.k);
-        select(document.getElementById("scale-bar-wrapper")).call(
-          scaleBarGenerator
-        );
-      } else {
-        e.transform.k = 0.3;
-      }
+      scaleBarGenerator.zoomFactor(e.transform.k);
+      select(document.getElementById("scale-bar-wrapper")).call(
+        scaleBarGenerator
+      );
     });
+
+  let dragBehavior = drag().on("drag", (e) => {
+    const k = sens / projRef.current.scale();
+    projRef.current.rotate([
+      projRef.current.rotate()[0] + e.dx * k,
+      projRef.current.rotate()[1] - e.dy * k,
+    ]);
+    setPath(() => geoPath().projection(projRef.current));
+  });
 
   // scale bar generator
   const scaleBarGenerator = geoScaleBar()
@@ -86,71 +85,12 @@ export default function Home() {
     // Fetch features from JSON file.
     fetchFeatures();
 
+    // initializes bar.
     select(document.getElementById("scale-bar-wrapper")).call(
       scaleBarGenerator
     );
 
-    // select the SVG DOM element.
-    select(inputRef.current)
-      .call(
-        drag().on("drag", (e, d) => {
-          const k = sens / projRef.current.scale();
-          const rotation = [
-            projRef.current.rotate()[0] + e.dx * k,
-            projRef.current.rotate()[1] - e.dy * k,
-          ];
-          projRef.current.rotate(rotation);
-          setPath(() => geoPath().projection(projRef.current));
-        })
-      )
-      .call(
-        zoom()
-          .scaleExtent([1, 10])
-          .translateExtent([
-            [0, 0],
-            [width, height],
-          ])
-          .on("zoom", (e, d) => {
-            if (e.transform.k > 0.3) {
-              projRef.current.scale(scale * e.transform.k);
-              setPath(() => geoPath().projection(projRef.current));
-              setScale(projRef.current.scale());
-
-              //   scaleBarGenerator.zoomFactor(e.transform.k);
-              //   select(document.getElementById("scale-bar-wrapper")).call(
-              //     scaleBarGenerator
-              //   );
-              select(document.getElementById("scale-bar-wrapper")).attr(
-                "transform",
-                e.transform
-              );
-              scaleBarGenerator.zoomFactor(e.transform.k);
-              select(document.getElementById("scale-bar-wrapper")).call(
-                scaleBarGenerator
-              );
-            } else {
-              e.transform.k = 0.3;
-            }
-          })
-      );
-    //   .call(
-    //     zoom().on("zoom", (e) => {
-    //       const t = e.transform;
-
-    //       select(document.getElementById("scale-bar-wrapper")).attr(
-    //         "transform",
-    //         t
-    //       );
-
-    //       // Pass the k property of the zoom's transform
-    //       // to the scale bar's scaleFactor.
-    //       // Then call the scaleBar again.
-    //       scaleBarGenerator.zoomFactor(e.transform.k);
-    //       select(document.getElementById("scale-bar-wrapper")).call(
-    //         scaleBarGenerator
-    //       );
-    //     })
-    //   );
+    select(inputRef.current).call(dragBehavior).call(zoomBehavior);
   }, []);
 
   return (
