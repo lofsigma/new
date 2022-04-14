@@ -116,6 +116,15 @@ export default function Home() {
   const height = 500;
   const sens = 75;
   const inputRef = useRef();
+  const projRef = useRef(
+    geoOrthographic()
+      .scale(250)
+      .center([0, 0])
+      .rotate([0, -30])
+      .translate([width / 2, height / 2])
+  );
+
+  let pth = geoPath().projection(projRef);
 
   const projection = geoOrthographic()
     .scale(250)
@@ -124,7 +133,7 @@ export default function Home() {
     .translate([width / 2, height / 2]);
 
   const [features, setFeatures] = useState([]);
-  const [path, setPath] = useState(() => geoPath().projection(projection));
+  const [path, setPath] = useState(() => geoPath().projection(projRef));
   const [scale, setScale] = useState(projection.scale());
   const [angles, setAngles] = useState(projection.rotate());
   const graticule = geoGraticule();
@@ -172,11 +181,14 @@ export default function Home() {
 
   // only runs once.
   const dragBehavior = (e, d) => {
-    const rotate = projection.rotate();
-    const k = sens / projection.scale();
-    const rotation = [rotate[0] + e.dx * k, rotate[1] - e.dy * k];
-    projection.rotate(rotation);
-    setPath(() => geoPath().projection(projection));
+    projRef.rotate();
+    const k = sens / projRef.scale();
+    const rotation = [
+      projRef.rotate()[0] + e.dx * k,
+      projRef.rotate()[1] - e.dy * k,
+    ];
+    projRef.rotate(rotation);
+    setPath(() => geoPath().projection(projRef));
   };
 
   const getCurrentAngles = () => {
@@ -208,6 +220,10 @@ export default function Home() {
     // }, 200);
   }, []);
 
+  useEffect(() => {
+    let pth = geoPath().projection(projRef);
+  }, [projRef.current]);
+
   return (
     <div className="wrapper">
       <svg id="cow" width={width} height={height} ref={inputRef}>
@@ -222,7 +238,7 @@ export default function Home() {
         <g className="countries">
           {features.map((f) => (
             <path
-              d={path(f)}
+              d={pth(f)}
               fill="white"
               stroke="black"
               strokeWidth="0.3"
@@ -233,7 +249,7 @@ export default function Home() {
         </g>
         <g>
           <path
-            d={path(graticule())}
+            d={pth(graticule())}
             fill="none"
             stroke="black"
             strokeWidth="0.3"
@@ -298,6 +314,26 @@ export default function Home() {
         }}
       >
         something
+      </button>
+      <button
+        onClick={() => {
+          projection.center(
+            geoCentroid(
+              features.filter((f) => f.properties.name === "Colombia")[0]
+            )
+          );
+          // projection.fitExtent(
+          //   [
+          //     [20, 20],
+          //     [480, 480],
+          //   ],
+          //   features.filter((f) => f.properties.name === "Colombia")[0]
+          // );
+          setPath(() => geoPath().projection(projection));
+          // setScale(projection.scale());
+        }}
+      >
+        hey!
       </button>
     </div>
   );
