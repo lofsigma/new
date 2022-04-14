@@ -244,12 +244,6 @@ export default function Home() {
     //   .attr("class", "scale-bar-wrapper")
     //   .call(scaleBarZoom);
 
-    const bar = useRef(
-      select(inputRef.current)
-        .append("g")
-        .attr("class", "scale-bar-wrapper")
-        .call(scaleBarZoom)
-    );
     select(inputRef.current)
       .call(drag().on("drag", dragBehavior))
       .call(
