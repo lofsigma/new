@@ -344,6 +344,16 @@
   "resolved" "https://registry.npmjs.org/d3-ease/-/d3-ease-3.0.1.tgz"
   "version" "3.0.1"
 
+"d3-format@^3.1.0":
+  "integrity" "sha512-YyUI6AEuY/Wpt8KWLgZHsIU86atmikuoOmCfommt0LYHiQSPjvX2AcFc38PX0CBpr2RCyZhjex+NS/LPOv6YqA=="
+  "resolved" "https://registry.npmjs.org/d3-format/-/d3-format-3.1.0.tgz"
+  "version" "3.1.0"
+
+"d3-geo-scale-bar@^1.2.5":
+  "integrity" "sha512-BTkVNQ1ZkwZnAf+ieJiG2Q/ZnN5A60u41HU2MzhmRe+nB+HNBfdiHVgbatOZMqTdrj07kDL9/LxEnpUOqqmOxA=="
+  "resolved" "https://registry.npmjs.org/d3-geo-scale-bar/-/d3-geo-scale-bar-1.2.5.tgz"
+  "version" "1.2.5"
+
 "d3-geo@^3.0.1":
   "integrity" "sha512-Wt23xBych5tSy9IYAM1FR2rWIBFWa52B/oF/GYe5zbdHrg08FU8+BuI6X4PvTwPDdqdAdq04fuWJpELtsaEjeA=="
   "resolved" "https://registry.npmjs.org/d3-geo/-/d3-geo-3.0.1.tgz"
