@@ -14,6 +14,7 @@
     "react-dom": "18.0.0"
   },
   "devDependencies": {
+    "d3-array": "^3.1.6",
     "d3-drag": "^3.0.0",
     "d3-format": "^3.1.0",
     "d3-geo": "^3.0.1",
