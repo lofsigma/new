@@ -13,12 +13,7 @@ import {
   geoInterpolate,
   geoGraticule,
 } from "d3-geo";
-
-import { format } from "d3-format";
-
-import { geoScaleBar } from "d3-geo-scale-bar";
 import { timer } from "d3-timer";
-// import Versor from "versor";
 
 const acos = Math.acos,
   asin = Math.asin,
@@ -117,11 +112,10 @@ class Versor {
 }
 
 export default function Home() {
-  const width = 700;
-  const height = 700;
+  const width = 500;
+  const height = 500;
   const sens = 75;
   const inputRef = useRef();
-
   const projRef = useRef(
     geoOrthographic()
       .scale(250)
@@ -129,16 +123,8 @@ export default function Home() {
       .rotate([0, -30])
       .translate([width / 2, height / 2])
   );
-  // scale bar generator
-  const scaleBarZoom = geoScaleBar()
-    .zoomClamp(true) // Set this to true to keep the bar's width constant
-    .projection(projRef.current)
-    .size([width, height])
-    .left(0.05)
-    .top(0.85)
-    .tickFormat((d) => format(",")(+d.toFixed(1)));
 
-  // let scaleBar = document.getElementById("scale-bar-wrapper");
+  let pth = geoPath().projection(projRef);
 
   const projection = geoOrthographic()
     .scale(250)
@@ -147,17 +133,10 @@ export default function Home() {
     .translate([width / 2, height / 2]);
 
   const [features, setFeatures] = useState([]);
-  const [path, setPath] = useState(() => geoPath().projection(projRef.current));
+  const [path, setPath] = useState(() => geoPath().projection(projRef));
   const [scale, setScale] = useState(projection.scale());
-  const [active, setActive] = useState(null);
+  const [angles, setAngles] = useState(projection.rotate());
   const graticule = geoGraticule();
-
-  //   const scaleBar = d3
-  //     .geoScaleBar()
-  //     .projection(projection)
-  //     .size([width, height]);
-
-  let centerFeature;
 
   const fetchFeatures = () => {
     fetch("/countries-110m.json", {
@@ -202,86 +181,35 @@ export default function Home() {
 
   // only runs once.
   const dragBehavior = (e, d) => {
-    const rotate = projRef.current.rotate();
-    const k = sens / projection.scale();
-    const rotation = [rotate[0] + e.dx * k, rotate[1] - e.dy * k];
-    projRef.current.rotate(rotation);
-    setPath(() => geoPath().projection(projRef.current));
+    projRef.rotate();
+    const k = sens / projRef.scale();
+    const rotation = [
+      projRef.rotate()[0] + e.dx * k,
+      projRef.rotate()[1] - e.dy * k,
+    ];
+    projRef.rotate(rotation);
+    setPath(() => geoPath().projection(projRef));
   };
 
-  let bar;
-
-  let d3zoom = zoom()
-    // no longer in d3 v4 - zoom initialises with zoomIdentity, so it's already at origin
-    // .translate([0, 0])
-    // .scale(1)
-    .scaleExtent([1, 8])
-    .on("zoom", (e, d) => {
-      if (e.transform.k > 0.3) {
-        projRef.current.scale(scale * e.transform.k);
-        setPath(() => geoPath().projection(projRef.current));
-        setScale(projRef.current.scale());
-
-        //   g.attr("transform", t);
-
-        // Pass the k property of the zoom's transform
-        // to the scale bar's scaleFactor.
-        // Then call the scaleBar again.
-        scaleBarZoom.zoomFactor(e.transform.k);
-        bar.call(scaleBarZoom);
-      } else {
-        e.transform.k = 0.3;
-      }
-    });
+  const getCurrentAngles = () => {
+    console.log(angles);
+  };
 
   useEffect(() => {
     fetchFeatures();
-    // bar = select(inputRef.current)
-    //   .append("g")
-    //   .attr("class", "scale-bar-wrapper")
-    //   .call(scaleBarZoom);
     select(inputRef.current)
       .call(drag().on("drag", dragBehavior))
       .call(
-        zoom()
-          // no longer in d3 v4 - zoom initialises with zoomIdentity, so it's already at origin
-          // .translate([0, 0])
-          // .scale(1)
-          .scaleExtent([1, 8])
-          .on("zoom", (e, d) => {
-            if (e.transform.k > 0.3) {
-              projRef.current.scale(scale * e.transform.k);
-              setPath(() => geoPath().projection(projRef.current));
-              setScale(projRef.current.scale());
-
-              //   g.attr("transform", t);
-
-              // Pass the k property of the zoom's transform
-              // to the scale bar's scaleFactor.
-              // Then call the scaleBar again.
-              scaleBarZoom.zoomFactor(e.transform.k);
-
-              bar.current.call(scaleBarZoom);
-            } else {
-              e.transform.k = 0.3;
-            }
-          })
+        zoom().on("zoom", (e, d) => {
+          if (e.transform.k > 0.3) {
+            projection.scale(scale * e.transform.k);
+            setPath(() => geoPath().projection(projection));
+            setScale(projection.scale());
+          } else {
+            e.transform.k = 0.3;
+          }
+        })
       );
-
-    centerFeature = (f) => {
-      const featureGeoCentroid = geoCentroid(f);
-      const iv = Versor.interpolateAngles(projRef.current.rotate(), [
-        -featureGeoCentroid[0],
-        -featureGeoCentroid[1],
-      ]);
-      transition()
-        .duration(750)
-        .tween("rot", () => (t) => {
-          projRef.current.rotate(iv(t));
-          console.log("t", iv(t));
-          setPath(() => geoPath().projection(projRef.current));
-        });
-    };
 
     // //optional globe spin
     // timer(function (elapsed) {
@@ -290,28 +218,11 @@ export default function Home() {
     //   projection.rotate([rotate[0] - 1 * k, rotate[1]]);
     //   setPath(() => geoPath().projection(projection));
     // }, 200);
-
-    // Call d3.zoom on your SVG element
-    // select(inputRef.current).call(
-    //   zoom()
-    //     // .scaleExtent([1, 10])
-    //     .translateExtent([
-    //       [0, 0],
-    //       [width, height],
-    //     ])
-    //     .on("zoom", (event) => {
-    //       const t = event.transform;
-
-    //       //   g.attr("transform", t);
-
-    //       // Pass the k property of the zoom's transform
-    //       // to the scale bar's scaleFactor.
-    //       // Then call the scaleBar again.
-    //       scaleBarZoom.zoomFactor(t.k);
-    //       bar.call(scaleBarZoom);
-    //     })
-    // );
   }, []);
+
+  useEffect(() => {
+    let pth = geoPath().projection(projRef);
+  }, [projRef.current]);
 
   return (
     <div className="wrapper">
@@ -322,34 +233,23 @@ export default function Home() {
           strokeWidth="0.2"
           cx={width / 2}
           cy={height / 2}
-          r={projRef.current.scale()}
+          r={scale}
         />
         <g className="countries">
           {features.map((f) => (
             <path
-              d={path(f)}
-              fill={f.properties.name === active ? "orange" : "white"}
+              d={pth(f)}
+              fill="white"
               stroke="black"
               strokeWidth="0.3"
               opacity="0.8"
-              //   className={f.properties.name === active ? "active" : ""}
-              key={f.properties.id}
-              onClick={() => {
-                // if (f.properties.name === active) {
-                //   // i'm already active.
-                //   // set active to null.
-                //   setActive(null);
-                // }
-                f.properties.name === active
-                  ? setActive(null)
-                  : setActive(f.properties.name);
-              }}
+              key={f.name}
             />
           ))}
         </g>
         <g>
           <path
-            d={path(graticule())}
+            d={pth(graticule())}
             fill="none"
             stroke="black"
             strokeWidth="0.3"
@@ -370,63 +270,70 @@ export default function Home() {
             },
           })}
         />
-        <g className="scale-bar-wrapper"></g>
       </svg>
       <button
         onClick={() => {
-          console.log("hello");
-          const featureGeoCentroid = geoCentroid(
-            features.filter((f) => f.properties.name === "Colombia")[0]
-          );
-          const iv = Versor.interpolateAngles(projRef.current.rotate(), [
-            -featureGeoCentroid[0],
-            -featureGeoCentroid[1],
+          const iv = Versor.interpolateAngles(angles, [
+            -geoCentroid(
+              features.filter((f) => f.properties.name === "Colombia")[0]
+            )[0],
+            10 -
+              geoCentroid(
+                features.filter((f) => f.properties.name === "Colombia")[0]
+              )[1],
+            0,
           ]);
           transition()
-            .duration(750)
+            .duration(1000)
             .tween("rot", () => (t) => {
-              projRef.current.rotate(iv(t));
+              projection.rotate(iv(t));
               console.log("t", iv(t));
-              setPath(() => geoPath().projection(projRef.current));
+              setPath(() => geoPath().projection(projection));
             });
+          setAngles(iv(1));
         }}
       >
         flower
+        {/* {console.log(interpolateAngles)} */}
       </button>
+      <button onClick={getCurrentAngles}>current Angle</button>
       <button
         onClick={() => {
-          //center
-          const featureGeoCentroid = geoCentroid(
-            features.filter((f) => f.properties.name === "Colombia")[0]
-          );
-          const iv = Versor.interpolateAngles(projRef.current.rotate(), [
-            -featureGeoCentroid[0],
-            -featureGeoCentroid[1],
-          ]);
-          transition()
-            .duration(750)
-            .tween("rot", () => (t) => {
-              projRef.current.rotate(iv(t));
-              console.log("t", iv(t));
-              setPath(() => geoPath().projection(projRef.current));
-            });
-          // zoom
+          console.log("before", projection.scale());
           var bounds = path.bounds(
               features.filter((f) => f.properties.name === "Colombia")[0]
             ),
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
             x = (bounds[0][0] + bounds[1][0]) / 2,
-            y = (bounds[0][1] + bounds[1][1]) / 2,
-            ss = Math.max(1, 0.9 / Math.max(dx / width, dy / height));
-
-          select(inputRef.current)
-            .transition()
-            .duration(750)
-            .call(d3zoom.transform, zoomIdentity.scale(ss));
+            y = (bounds[0][1] + bounds[1][1]) / 2;
+          projection.scale(300);
+          setScale(300);
+          setPath(() => geoPath().projection(projection));
+          console.log("after", projection.scale());
         }}
       >
-        hell2
+        something
+      </button>
+      <button
+        onClick={() => {
+          projection.center(
+            geoCentroid(
+              features.filter((f) => f.properties.name === "Colombia")[0]
+            )
+          );
+          // projection.fitExtent(
+          //   [
+          //     [20, 20],
+          //     [480, 480],
+          //   ],
+          //   features.filter((f) => f.properties.name === "Colombia")[0]
+          // );
+          setPath(() => geoPath().projection(projection));
+          // setScale(projection.scale());
+        }}
+      >
+        hey!
       </button>
     </div>
   );

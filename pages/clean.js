@@ -259,7 +259,13 @@ export default function Home() {
 
   return (
     <div className="wrapper">
-      <svg width="100%" height={height} ref={inputRef} viewBox="0 0 700 700">
+      <svg
+        width="100%"
+        height={height}
+        ref={inputRef}
+        viewBox="0 0 700 700"
+        preserveAspectRatio="xMidYMid meet"
+      >
         <circle
           fill="#d3d3d3"
           stroke="000"
