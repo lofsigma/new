@@ -7,6 +7,8 @@ import { transition } from "d3-transition";
 import { format } from "d3-format";
 import { geoScaleBar } from "d3-geo-scale-bar";
 import { timer } from "d3-timer";
+// import geoZoom from "d3-geo-zoom";
+// import d3GeoZoom from "d3-geo-zoom";
 // import versor from "versor";
 import {
   geoOrthographic,
@@ -18,7 +20,8 @@ import {
   geoGraticule,
 } from "d3-geo";
 
-import Versor from "../lib/Versor";
+// import Versor from "../lib/Versor";
+import versor from "../lib/oldVersor";
 
 export default function Home() {
   const width = 700;
@@ -33,6 +36,39 @@ export default function Home() {
       .rotate([0, -30])
       .translate([width / 2, height / 2])
   );
+
+  const zoomStarted = () => {
+    v0 = Versor.r0 = q0 = Versor.fromAngles(projection.rotate());
+  };
+
+  const zoomed = (e) => {
+    projection.scale(e.transform.k);
+    const v1 = Versor.cartesian(projRef.current.invert([e.dx, e.dy]));
+    const delta = versor.delta(v0, v1);
+
+    (q1 = versor.multiply(q0, versor.delta(v0, v1))),
+      (r1 = versor.rotation(q1));
+    projection.rotate(r1);
+
+    render();
+  };
+
+  function drag(projection) {
+    let v0, q0, r0;
+
+    function dragstarted(e) {
+      v0 = versor.cartesian(projection.invert([e.x, e.y]));
+      q0 = versor((r0 = projection.rotate()));
+    }
+
+    function dragged(e) {
+      const v1 = versor.cartesian(projection.rotate(r0).invert([e.x, e.y]));
+      const q1 = versor.multiply(q0, versor.delta(v0, v1));
+      projection.rotate(versor.rotation(q1));
+    }
+
+    return drag().on("start", dragstarted).on("drag", dragged);
+  }
 
   const [features, setFeatures] = useState([]);
   const [path, setPath] = useState(() => geoPath().projection(projRef.current));
@@ -86,11 +122,20 @@ export default function Home() {
     fetchFeatures();
 
     // initializes bar.
-    select(document.getElementById("scale-bar-wrapper")).call(
-      scaleBarGenerator
-    );
+    // select(document.getElementById("scale-bar-wrapper")).call(
+    //   scaleBarGenerator
+    // );
 
-    select(inputRef.current).call(dragBehavior).call(zoomBehavior);
+    // select(inputRef.current).call(dragBehavior).call(zoomBehavior);
+    select(inputRef.current).call(drag(projRef.current));
+    // geoZoom()
+    //   .projection(projRef.current)
+    //   .onMove(({ scale, rotation }) => {
+    //     projRef.current.rotate(rotation);
+    //     projRef.current.scale(scale);
+    //     setPath(() => geoPath().projection(projRef.current));
+    //   })(inputRef.current);
+    // console.log(d3GeoZoom);
   }, []);
 
   return (
