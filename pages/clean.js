@@ -21,23 +21,39 @@ import {
   geoGraticule,
 } from "d3-geo";
 
-// import Versor from "../lib/Versor";
+import Versor from "../lib/Versor";
 import versor from "../lib/oldVersor";
+
+function debounce(fn, ms) {
+  let timer;
+  return (_) => {
+    clearTimeout(timer);
+    timer = setTimeout((_) => {
+      timer = null;
+      fn.apply(this, arguments);
+    }, ms);
+  };
+}
 
 export default function Home() {
   const width = 700;
   const height = 700;
   const sens = 75;
 
+  const [dimensions, setDimensions] = useState({
+    height: 0,
+    width: 0,
+  });
+
+  const ref = useRef();
   const inputRef = useRef();
   const projRef = useRef(
     geoOrthographic()
-      .scale(330)
+      .scale(250)
       .center([0, 0])
       .rotate([0, -30])
       .translate([width / 2, height / 2])
   );
-
   // let drag = (proj) => {};
 
   const [features, setFeatures] = useState([]);
@@ -61,6 +77,25 @@ export default function Home() {
         setFeatures(feature(d, d.objects.countries).features);
       });
   };
+
+  useEffect(() => {
+    const debouncedHandleResize = debounce(function handleResize() {
+      setDimensions({
+        height: window.innerHeight,
+        width: inputRef.current.width.baseVal.value,
+      });
+      // projRef.current.translate([
+      //   inputRef.current.width.baseVal.value / 2,
+      //   height / 2,
+      // ]);
+      // setPath(() => geoPath().projection(projRef.current));
+    }, 1000);
+
+    window.addEventListener("resize", debouncedHandleResize);
+    return (_) => {
+      window.removeEventListener("resize", debouncedHandleResize);
+    };
+  });
 
   let v0, q0, r0;
 
@@ -224,13 +259,13 @@ export default function Home() {
 
   return (
     <div className="wrapper">
-      <svg width={width} height={height} ref={inputRef}>
+      <svg width="100%" height={height} ref={inputRef} viewBox="0 0 700 700">
         <circle
           fill="#d3d3d3"
           stroke="000"
           strokeWidth="0.2"
-          cx={width / 2}
-          cy={height / 2}
+          cx="50%"
+          cy="50%"
           r={projRef.current.scale()}
         />
         <g className="countries">
@@ -293,7 +328,10 @@ export default function Home() {
             ),
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
-            ss = Math.max(1, 0.9 / Math.max(dx / width, dy / height));
+            ss = Math.max(
+              1,
+              0.9 / Math.max(dx / ref.current.offsetWidth, dy / height)
+            );
 
           // smoothly reset scale.
           select(inputRef.current)

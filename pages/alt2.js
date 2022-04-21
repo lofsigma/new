@@ -4,7 +4,7 @@ import { zoom, zoomIdentity } from "d3-zoom";
 import { feature } from "topojson-client";
 import { event, select } from "d3-selection";
 import { transition } from "d3-transition";
-// import * as Versor from "versor";
+import * as Versor from "versor";
 import {
   geoOrthographic,
   geoPath,
