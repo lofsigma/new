@@ -283,10 +283,13 @@ export default function Home() {
           const featureGeoCentroid = geoCentroid(
             features.filter((f) => f.properties.name === "Colombia")[0]
           );
+          console.log(featureGeoCentroid);
           const iv = Versor.interpolateAngles(projRef.current.rotate(), [
             -featureGeoCentroid[0],
             -featureGeoCentroid[1],
           ]);
+
+          console.log("hey", iv(1));
           transition()
             .duration(750)
             .tween("rotate", () => (t) => {
