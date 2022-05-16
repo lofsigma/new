@@ -54,17 +54,17 @@ export default function Home() {
 
   // const delaunay = Delaunay.from(points);
 
-  let z = 0;
-  let constrains = [points]
-    .map((ring, i) => {
-      const c = ring.map((d, i) => [z + i, z + ((i + 1) % ring.length)]);
-      z += ring.length;
-      return c;
-    })
-    .flat();
+  // let z = 0;
+  // let constrains = [points]
+  //   .map((ring, i) => {
+  //     const c = ring.map((d, i) => [z + i, z + ((i + 1) % ring.length)]);
+  //     z += ring.length;
+  //     return c;
+  //   })
+  //   .flat();
 
-  const del = Delaunay.from(positions);
-  const con = new Constrainautor(del._delaunator);
+  // const del = Delaunay.from(positions);
+  // const con = new Constrainautor(del._delaunator);
 
   // Constrains
   //   const constrains = {
