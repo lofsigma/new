@@ -225,6 +225,46 @@ export default function Home() {
   return (
     <div className="wrapper">
       <canvas ref={canvasRef} height="700" width="700"></canvas>
+      <button
+        onClick={() => {
+          const featureGeoCentroid = geoCentroid(
+            features.features.filter((f) => f.properties.name === "Colombia")[0]
+          );
+          const iv = Versor.interpolateAngles(projRef.current.rotate(), [
+            -featureGeoCentroid[0],
+            -featureGeoCentroid[1],
+          ]);
+
+          const i = interpolateNumber(
+            projRef.current.scale(),
+            geoOrthographic()
+              .scale(250)
+              .center([0, 0])
+              .rotate([0, -30])
+              .translate([width / 2, height / 2])
+              .fitExtent(
+                [
+                  [5, 5],
+                  [width - 5, height - 5],
+                ],
+                features.features.filter(
+                  (f) => f.properties.name === "Colombia"
+                )[0]
+              )
+              .scale()
+          );
+          transition()
+            .duration(1000)
+            .tween("rotate", () => (t) => {
+              projRef.current.rotate(iv(t));
+              projRef.current.scale(i(t));
+              render(features);
+              //   setPath(() => geoPath().projection(projRef.current));
+            });
+        }}
+      >
+        ⚡
+      </button>
     </div>
   );
 }
