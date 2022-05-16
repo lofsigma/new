@@ -227,8 +227,8 @@ export default function Home() {
         // Pass the k property of the zoom's transform
         // to the scale bar's scaleFactor.
         // Then call the scaleBar again.
-        scaleBarZoom.zoomFactor(e.transform.k);
-        bar.call(scaleBarZoom);
+        // scaleBarZoom.zoomFactor(e.transform.k);
+        // bar.call(scaleBarZoom);
       } else {
         e.transform.k = 0.3;
       }
@@ -259,9 +259,9 @@ export default function Home() {
               // Pass the k property of the zoom's transform
               // to the scale bar's scaleFactor.
               // Then call the scaleBar again.
-              scaleBarZoom.zoomFactor(e.transform.k);
+              // scaleBarZoom.zoomFactor(e.transform.k);
 
-              bar.current.call(scaleBarZoom);
+              // bar.current.call(scaleBarZoom);
             } else {
               e.transform.k = 0.3;
             }

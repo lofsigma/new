@@ -9,12 +9,9 @@ import { geoScaleBar } from "d3-geo-scale-bar";
 import { mean } from "d3-array";
 import { timer } from "d3-timer";
 import { interpolateNumber } from "d3-interpolate";
-// import geoZoom from "d3-geo-zoom";
-// import d3GeoZoom from "d3-geo-zoom";
-// import versor from "versor";
+import { Delaunay } from "d3-delaunay";
 import {
   geoOrthographic,
-  geoAzimuthalEqualArea,
   geoPath,
   geoBounds,
   geoCentroid,
@@ -25,27 +22,9 @@ import {
 import Versor from "../lib/Versor";
 import versor from "../lib/oldVersor";
 
-function debounce(fn, ms) {
-  let timer;
-  return (_) => {
-    clearTimeout(timer);
-    timer = setTimeout((_) => {
-      timer = null;
-      fn.apply(this, arguments);
-    }, ms);
-  };
-}
-
-const interpolator = () => {};
-
 export default function Home() {
   const width = 700;
   const height = 700;
-
-  const [dimensions, setDimensions] = useState({
-    height: 0,
-    width: 0,
-  });
 
   const ref = useRef();
   const inputRef = useRef();
@@ -56,7 +35,6 @@ export default function Home() {
       .rotate([0, -30])
       .translate([width / 2, height / 2])
   );
-  // let drag = (proj) => {};
 
   const [features, setFeatures] = useState([]);
   const [path, setPath] = useState(() => geoPath().projection(projRef.current));
@@ -70,26 +48,35 @@ export default function Home() {
       });
   };
 
-  useEffect(() => {
-    const debouncedHandleResize = debounce(function handleResize() {
-      setDimensions({
-        height: window.innerHeight,
-        width: inputRef.current.width.baseVal.value,
-      });
-      // projRef.current.translate([
-      //   inputRef.current.width.baseVal.value / 2,
-      //   height / 2,
-      // ]);
-      // setPath(() => geoPath().projection(projRef.current));
-    }, 1000);
+  // Kazakhstan Polygon
+  const points = features[5] ? features[5].geometry.coordinates : null;
+  // Feed that to delaunator;
 
-    window.addEventListener("resize", debouncedHandleResize);
-    return (_) => {
-      window.removeEventListener("resize", debouncedHandleResize);
-    };
-  });
+  // const delaunay = Delaunay.from(points);
 
-  // let v0, q0, r0;
+  let z = 0;
+  let constrains = [points]
+    .map((ring, i) => {
+      const c = ring.map((d, i) => [z + i, z + ((i + 1) % ring.length)]);
+      z += ring.length;
+      return c;
+    })
+    .flat();
+
+  const del = Delaunay.from(positions);
+  const con = new Constrainautor(del._delaunator);
+
+  // Constrains
+  //   const constrains = {
+  //   let z = 0;
+  //   return polygon
+  //     .map(function(ring, i) {
+  //       const c = ring.map((d, i) => [z + i, z + ((i + 1) % ring.length)]);
+  //       z += ring.length;
+  //       return c;
+  //     })
+  //     .flat();
+  // }
 
   let v0, q0, r0, a0, tl;
 
@@ -213,12 +200,6 @@ export default function Home() {
       );
     };
 
-    // initializes bar.
-    // select(document.getElementById("scale-bar-wrapper")).call(
-    //   scaleBarGenerator
-    // );
-
-    // select(inputRef.current).call(dragBehavior).call(zoomBehavior);
     select(inputRef.current)
       .call(
         dragBehavior(projRef.current).on("drag.render", () =>
@@ -230,15 +211,6 @@ export default function Home() {
           setPath(() => geoPath().projection(projRef.current))
         )
       );
-    // .on("end.render", () => render(land50)));
-    // geoZoom()
-    //   .projection(projRef.current)
-    //   .onMove(({ scale, rotation }) => {
-    //     projRef.current.rotate(rotation);
-    //     projRef.current.scale(scale);
-    //     setPath(() => geoPath().projection(projRef.current));
-    //   })(inputRef.current);
-    // console.log(d3GeoZoom);
   }, []);
 
   return (
@@ -268,7 +240,6 @@ export default function Home() {
               opacity="0.8"
               key={f.properties.id}
               onClick={() => {
-                // toggle active class.
                 f.properties.name === active
                   ? setActive(null)
                   : setActive(f.properties.name);
@@ -348,15 +319,6 @@ export default function Home() {
             ]
           );
 
-          //   console.log(
-          //     "ss",
-          //     ss,
-          //     bounds,
-          //     0.9 / Math.max(dx / 700, dy / height),
-          //     "alt",
-          //     Math.min(8, 0.9 / Math.max((x1 - x0) / 655.08, (y1 - y0) / height))
-          //   );
-
           // smoothly reset scale.
           select(inputRef.current)
             .transition()
@@ -367,7 +329,6 @@ export default function Home() {
                 0.9 / Math.max((x1 - x0) / 655.08, (y1 - y0) / height)
               )
             );
-          // .call(zoom3.scaleTo, 15);
 
           setPath(() => geoPath().projection(projRef.current));
         }}
@@ -388,9 +349,6 @@ export default function Home() {
               )
               .scale()
           );
-
-          //   projRef.current.translate([655.08 / 2, height / 2]);
-          //   setPath(() => geoPath().projection(projRef.current));
         }}
       >
         hey
@@ -441,17 +399,8 @@ export default function Home() {
             .tween("rotate", () => (t) => {
               projRef.current.rotate(iv(t));
               projRef.current.scale(i(t));
-              //   projRef.current.fitSize(
-              //     [width, height],
-              //     features.filter((f) => f.properties.name === "Colombia")[0]
-              //   );
-
-              //   projRef.current.translate([655.08 / 2, height / 2]);
               setPath(() => geoPath().projection(projRef.current));
             });
-          // .call(
-
-          // );
         }}
       >
         ⚡
