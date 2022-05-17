@@ -33,3 +33,7 @@ a {
 .active {
   background-color: orange;
 }
+
+svg {
+  margin-left: 1%;
+}

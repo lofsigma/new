@@ -49,12 +49,15 @@ export default function Home() {
     geoZoom().projection(projRef.current).onMove(render)(svgRef.current);
   }, []);
   return (
-    <div
-      className="wrapper"
-      viewBox="0 0 700 700"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <svg ref={svgRef} width={width} height={height}>
+    <div className="wrapper">
+      <svg
+        ref={svgRef}
+        width="98%"
+        viewBox="0 0 700 700"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <rect width={width} height={height} fill="none" stroke="red" />
+
         <g className="countries">
           {features.map((f) => (
             <path
