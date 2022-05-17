@@ -201,11 +201,11 @@ export default function Home() {
     };
 
     select(inputRef.current)
-      .call(
-        dragBehavior(projRef.current).on("drag.render", () =>
-          setPath(() => geoPath().projection(projRef.current))
-        )
-      )
+      // .call(
+      //   dragBehavior(projRef.current).on("drag.render", () =>
+      //     setPath(() => geoPath().projection(projRef.current))
+      //   )
+      // )
       .call(
         zoomBehavior(projRef.current).on("zoom.render", () =>
           setPath(() => geoPath().projection(projRef.current))
